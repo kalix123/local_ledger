@@ -186,14 +186,14 @@ describe('settings', () => {
     await fireEvent.press(screen.getByText('Settings'));
     expect(screen.queryByText('Custom')).toBeNull();
 
-    await fireEvent.changeText(screen.getByPlaceholderText('FT-XXXX-XXXX'), 'FT-AAAA-BBBB');
+    await fireEvent.changeText(screen.getByPlaceholderText('LL-XXXX-XXXX'), 'FT-AAAA-BBBB');
     await fireEvent.press(screen.getByText('Unlock'));
     expect(await screen.findByText(/doesn't look right/)).toBeTruthy();
     expect(screen.queryByText('Custom')).toBeNull();
 
-    await fireEvent.changeText(screen.getByPlaceholderText('FT-XXXX-XXXX'), 'ft-vz58-8c53');
+    await fireEvent.changeText(screen.getByPlaceholderText('LL-XXXX-XXXX'), 'ft-vz58-8c53');
     await fireEvent.press(screen.getByText('Unlock'));
-    expect(await screen.findByText('Thanks for supporting FinTrack!')).toBeTruthy();
+    expect(await screen.findByText('Thanks for supporting Local Ledger!')).toBeTruthy();
     expect(screen.getByText('Custom')).toBeTruthy();
     expect((await stored()).settings.supporterCode).toBe('FT-VZ58-8C53');
   });

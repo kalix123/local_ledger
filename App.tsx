@@ -18,7 +18,7 @@ const TABS: { id: Tab; label: string; icon: IconName }[] = [
   { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 
-const TITLES: Record<Tab, string> = { home: 'FinTrack', history: 'History', budgets: 'Budgets', settings: 'Settings' };
+const TITLES: Record<Tab, string> = { home: 'Local Ledger', history: 'History', budgets: 'Budgets', settings: 'Settings' };
 
 function Shell() {
   const { palette: p, ready, data, advanced, loadError } = useStore();
@@ -116,7 +116,7 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { err
     return { error };
   }
   componentDidCatch(error: Error) {
-    console.error('FinTrack crashed', error);
+    console.error('Local Ledger crashed', error);
   }
   render() {
     if (!this.state.error) return this.props.children;

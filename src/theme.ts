@@ -80,7 +80,7 @@ export const THEMES: Record<Exclude<ThemeId, 'system' | 'custom'>,{ label: strin
 };
 
 export const APP_ICONS: Record<AppIconId, { glyph: string; label: string; supporter: boolean }> = {
-  coin: { glyph: '💰', label: 'FinTrack', supporter: false }, // rendered as assets/logo.png by AppBadge
+  coin: { glyph: '💰', label: 'Local Ledger', supporter: false }, // rendered as assets/logo.png by AppBadge
   leaf: { glyph: '🌿', label: 'Leaf', supporter: true },
   rocket: { glyph: '🚀', label: 'Rocket', supporter: true },
   gem: { glyph: '💎', label: 'Gem', supporter: true },

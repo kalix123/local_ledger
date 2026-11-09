@@ -1,6 +1,6 @@
 /**
  * Validate and repair anything loaded from disk or a backup file. Backups can be hand-edited,
- * truncated, from an older/newer version, or not FinTrack files at all, so nothing is trusted:
+ * truncated, from an older/newer version, or not Local Ledger files at all, so nothing is trusted:
  * every field is type-checked and anything unusable is dropped or reset to a default.
  */
 import { DEFAULT_CATEGORIES, defaultData, DEFAULT_SETTINGS } from './defaults';
@@ -142,7 +142,7 @@ function sanitizeSettings(raw: unknown): Settings {
 }
 
 export function sanitize(raw: unknown): AppData {
-  if (!isObj(raw)) throw new Error('Not a FinTrack backup.');
+  if (!isObj(raw)) throw new Error('Not a Local Ledger backup.');
   if (!Array.isArray(raw.transactions)) throw new Error('Backup is missing a transactions list.');
   const categories = sanitizeCategories(raw.categories);
   return {

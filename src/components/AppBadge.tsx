@@ -11,7 +11,7 @@ const LOGO = require('../../assets/logo.png');
 export default function AppBadge({ id, size }: { id: AppIconId; size: number }) {
   const { palette: p } = useStore();
   if (id === 'coin' || !APP_ICONS[id]) {
-    return <Image source={LOGO} style={{ width: size, height: size, borderRadius: size * 0.22 }} accessibilityLabel="FinTrack" />;
+    return <Image source={LOGO} style={{ width: size, height: size, borderRadius: size * 0.22 }} accessibilityLabel="Local Ledger" />;
   }
   return (
     <View style={{ width: size, height: size, borderRadius: size * 0.22, backgroundColor: p.accent, alignItems: 'center', justifyContent: 'center' }}>

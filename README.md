@@ -1,10 +1,10 @@
-# FinTrack
+# Local Ledger
 
-A privacy-first personal finance tracker that runs entirely on your phone. Type what you spent in plain English and FinTrack files it. There's no account, no cloud and no tracking, and it makes no network requests unless you turn on the optional AI.
+A privacy-first personal finance tracker that runs entirely on your phone. Type what you spent in plain English and Local Ledger files it. There's no account, no cloud and no tracking, and it makes no network requests unless you turn on the optional AI.
 
 Built with Expo / React Native. Android is the main target; it also runs in a web browser.
 
-<p align="center"><img src="assets/logo.png" width="96" alt="FinTrack logo"></p>
+<p align="center"><img src="assets/logo.png" width="96" alt="Local Ledger logo"></p>
 
 ## Features
 
@@ -72,7 +72,7 @@ The codes themselves are never in the app. [src/supporter.ts](src/supporter.ts) 
 
 ```bash
 npm run supporter-code                    # new random code + its hash
-npm run supporter-code -- FT-ABCD-EFGH    # hash for a code you chose
+npm run supporter-code -- LL-ABCD-EFGH    # hash for a code you chose
 ```
 
 Paste the printed hash into `SUPPORTER_CODE_HASHES` and give the code to supporters. To rotate a leaked code, add a new hash. Remove the old one only if you want to re-lock everyone who used it. Because the app works offline, someone determined could still patch the check out; this just stops anyone copying the code from the source.
@@ -85,7 +85,7 @@ Use [EAS Build](https://docs.expo.dev/build/introduction/) to build the app in t
 npx eas-cli@latest build --platform android
 ```
 
-- The Android package is `com.coratealeaf.fintrack` (in [app.json](app.json)). It can't be changed after the app is published on Google Play.
+- The Android package is `com.coratealeaf.localledger` (in [app.json](app.json)). It can't be changed after the app is published on Google Play.
 - Bump `version` in `app.json` for each store release.
 
 ## Project layout
@@ -115,4 +115,4 @@ __tests__/            Jest suite
 
 ## Support
 
-FinTrack is free with no ads. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cora_tealeaf).
+Local Ledger is free with no ads. If it helps you, you can [buy me a coffee on Ko-fi](https://ko-fi.com/cora_tealeaf).

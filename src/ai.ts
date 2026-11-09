@@ -1,7 +1,7 @@
 /**
  * Optional bring-your-own-key AI. Nothing in here runs unless the user configures a provider
  * in Advanced mode. Requests go straight from the device to the endpoint the user typed in —
- * there is no FinTrack server in between.
+ * there is no Local Ledger server in between.
  */
 import { AISettings, Category, ParsedEntry } from './types';
 import { round2, today } from './utils';

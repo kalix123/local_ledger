@@ -615,9 +615,9 @@ function DataSection() {
 
   const exportJSON = async () => {
     const copy = { ...data, settings: { ...data.settings, ai: { ...data.settings.ai, apiKey: includeKey ? data.settings.ai.apiKey : '' } } };
-    await saveTextFile(`fintrack-backup-${today()}.json`, JSON.stringify(copy, null, 2), 'application/json');
+    await saveTextFile(`local-ledger-backup-${today()}.json`, JSON.stringify(copy, null, 2), 'application/json');
   };
-  const exportCSV = () => saveTextFile(`fintrack-transactions-${today()}.csv`, toCSV(data), 'text/csv');
+  const exportCSV = () => saveTextFile(`local-ledger-transactions-${today()}.csv`, toCSV(data), 'text/csv');
   const importJSON = async () => {
     try {
       const text = await pickTextFile();
@@ -674,7 +674,7 @@ function SupporterSection() {
       updateSettings({ supporterCode: normalizeCode(code) });
       setCode('');
       setErr('');
-    } else setErr("That code doesn't look right — check for typos (it starts with FT-).");
+    } else setErr("That code doesn't look right — check for typos (it starts with LL-).");
   };
   return (
     <>
@@ -684,7 +684,7 @@ function SupporterSection() {
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
               <Icon name="heart" size={18} color={p.accent} />
-              <T weight="700">Thanks for supporting FinTrack!</T>
+              <T weight="700">Thanks for supporting Local Ledger!</T>
             </View>
             <T size={13} muted style={{ marginTop: 4 }}>
               Supporter themes and badges are unlocked. Code {data.settings.supporterCode} is checked offline — nothing is sent anywhere.
@@ -709,10 +709,10 @@ function SupporterSection() {
         ) : (
           <>
             <T size={13} muted style={{ marginBottom: 10, lineHeight: 19 }}>
-              FinTrack is free with no ads or tracking. If it helps you, a coffee on Ko-fi keeps it going — supporters get a code that unlocks extra themes and
+              Local Ledger is free with no ads or tracking. If it helps you, a coffee on Ko-fi keeps it going — supporters get a code that unlocks extra themes and
               badges, validated entirely offline.
             </T>
-            <Field placeholder="FT-XXXX-XXXX" maxLength={24} value={code} onChangeText={setCode} autoCapitalize="characters" autoCorrect={false} onSubmitEditing={redeem} />
+            <Field placeholder="LL-XXXX-XXXX" maxLength={24} value={code} onChangeText={setCode} autoCapitalize="characters" autoCorrect={false} onSubmitEditing={redeem} />
             {err ? (
               <T size={12} color={p.danger} style={{ marginTop: -6, marginBottom: 8 }}>
                 {err}

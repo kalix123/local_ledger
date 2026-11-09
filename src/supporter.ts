@@ -7,14 +7,15 @@
  * code, and (unlike the old checksum scheme) there is no formula here for minting new ones.
  *
  * To add a code: `npm run supporter-code` (new random code) or
- * `npm run supporter-code -- FT-ABCD-EFGH` (your own), then paste the printed hash into
+ * `npm run supporter-code -- LL-ABCD-EFGH` (your own), then paste the printed hash into
  * SUPPORTER_CODE_HASHES. Removing a hash re-locks everyone who used that code, so only
  * do that if a code leaks.
  */
-const PEPPER = 'fintrack-supporter-v2:';
+const PEPPER = 'localledger-supporter-v2:';
 
 export const SUPPORTER_CODE_HASHES: readonly string[] = [
-  '23fba7a05b2a2f3349b40f1a6abec99d574e9aac332902cffc699592977f0900', // Ko-fi thank-you code (Nov 2026)
+  'a5dcf5e90d35ad58a75f2309c762f15e1447ff758c091f2c23086d958dab2395', // original Ko-fi code from the FinTrack days (Nov 2026)
+  '6077a9b3655b224f242efcd14e7a7f840fbde2ac1a3a7a8e8366e866d09d140e', // Local Ledger Ko-fi code (Nov 2026)
 ];
 
 export function normalizeCode(code: string): string {
@@ -23,7 +24,8 @@ export function normalizeCode(code: string): string {
 
 export function isValidSupporterCode(code: string): boolean {
   const c = normalizeCode(code);
-  if (!/^FT(-[A-Z0-9]{4}){2,4}$/.test(c)) return false;
+  // LL- is the current format; FT- codes handed out before the rename keep working.
+  if (!/^(LL|FT)(-[A-Z0-9]{4}){2,4}$/.test(c)) return false;
   return SUPPORTER_CODE_HASHES.includes(sha256Hex(PEPPER + c));
 }
 

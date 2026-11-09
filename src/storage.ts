@@ -10,9 +10,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { AppData, Transaction } from './types';
 
-export const META_KEY = 'fintrack:data:v2';
-export const CHUNK_PREFIX = 'fintrack:tx:';
-export const LEGACY_KEY = 'fintrack:data:v1';
+export const META_KEY = 'localledger:data:v2';
+export const CHUNK_PREFIX = 'localledger:tx:';
+export const LEGACY_KEY = 'localledger:data:v1';
 export const CHUNK_SIZE = 1000;
 
 /**

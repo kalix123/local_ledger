@@ -10,7 +10,8 @@ describe('supporter codes', () => {
     ['abc', 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'],
     // 56 bytes: padding spills into a second block
     ['abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq', '248d6a61d20638b8e5c026930c3e6039a33ce45964ff2167f6ecedd419db06c1'],
-    ['fintrack-supporter-v2:FT-VZ58-8C53', '23fba7a05b2a2f3349b40f1a6abec99d574e9aac332902cffc699592977f0900'],
+    ['localledger-supporter-v2:FT-VZ58-8C53', 'a5dcf5e90d35ad58a75f2309c762f15e1447ff758c091f2c23086d958dab2395'],
+    ['localledger-supporter-v2:LL-ZPGD-JRXX-53G7', '6077a9b3655b224f242efcd14e7a7f840fbde2ac1a3a7a8e8366e866d09d140e'],
   ])('sha256(%p)', (input, hash) => {
     expect(sha256Hex(input)).toBe(hash);
   });
@@ -24,11 +25,15 @@ describe('supporter codes', () => {
     expect(sha256Hex('héllo 💰')).toBe('574f8fdfeff1af855bcc22a7fef235ad5246e9322aa5ef9a3d0730ec2ca3e211');
   });
 
-  test('the shipped code unlocks, however it is typed', () => {
-    for (const c of ['FT-VZ58-8C53', 'ft-vz58-8c53', '  FT-VZ58-8C53  ', 'FT-VZ58 -8C53'.replace(' ', '')]) expect(isValidSupporterCode(c)).toBe(true);
+  test('the shipped codes unlock, however they are typed', () => {
+    for (const c of ['LL-ZPGD-JRXX-53G7', 'll-zpgd-jrxx-53g7', '  LL-ZPGD-JRXX-53G7  ', 'LL-ZPGD -JRXX-53G7'.replace(' ', '')]) expect(isValidSupporterCode(c)).toBe(true);
   });
 
-  test.each(['', 'FT-VZ58-8C54', 'FT-VZ58', 'VZ58-8C53', 'FT-AAAA-BBBB', 'FT-VZ58-8C53-XXXX', '23fba7a05b2a2f3349b40f1a6abec99d574e9aac332902cffc699592977f0900', 'x'.repeat(10000)])(
+  test('the code given out before the rename (FT-) still unlocks', () => {
+    for (const c of ['FT-VZ58-8C53', 'ft-vz58-8c53']) expect(isValidSupporterCode(c)).toBe(true);
+  });
+
+  test.each(['', 'FT-VZ58-8C54', 'LL-VZ58-8C53', 'LL-ZPGD-JRXX-53G8', 'XX-ZPGD-JRXX-53G7', 'FT-VZ58', 'VZ58-8C53', 'FT-AAAA-BBBB', 'FT-VZ58-8C53-XXXX', '6077a9b3655b224f242efcd14e7a7f840fbde2ac1a3a7a8e8366e866d09d140e', 'x'.repeat(10000)])(
     'rejects %p',
     (c) => {
       expect(isValidSupporterCode(c)).toBe(false);
@@ -36,12 +41,12 @@ describe('supporter codes', () => {
   );
 
   test('the code itself does not appear in the shipped hashes', () => {
-    expect(SUPPORTER_CODE_HASHES.join()).not.toMatch(/FT-/);
+    expect(SUPPORTER_CODE_HASHES.join()).not.toMatch(/(FT|LL)-/);
     for (const h of SUPPORTER_CODE_HASHES) expect(h).toMatch(/^[0-9a-f]{64}$/);
   });
 
   test('normalizeCode', () => {
-    expect(normalizeCode(' ft-ab cd-efgh ')).toBe('FT-ABCD-EFGH');
+    expect(normalizeCode(' ll-ab cd-efgh ')).toBe('LL-ABCD-EFGH');
   });
 });
 
