@@ -53,7 +53,7 @@ npm run android    # Expo Go on a phone, or an Android emulator
 ```bash
 npm test             # full Jest suite (jest-expo + React Native Testing Library)
 npm run typecheck    # TypeScript
-npx expo lint        # ESLint
+npm run lint         # ESLint
 ```
 
 The suite lives in [`__tests__/`](__tests__):
@@ -79,14 +79,17 @@ Paste the printed hash into `SUPPORTER_CODE_HASHES` and give the code to support
 
 ## Building for release
 
-Use [EAS Build](https://docs.expo.dev/build/introduction/) to build the app in the cloud:
+[GitHub Actions](.github/workflows/android.yml) builds the APK on every push to `main` and on pull requests. It runs the tests, generates the Android project with `expo prebuild`, and compiles it with Gradle. The APK is attached to each run under **Actions → Android build → Artifacts**. You can also start a build by hand with **Run workflow**.
 
-```bash
-npx eas-cli@latest build --platform android
-```
+To publish a release:
 
-- The Android package is `com.coratealeaf.localledger` (in [app.json](app.json)). It can't be changed after the app is published on Google Play.
-- For each release, bump `version` **and** `android.versionCode` in `app.json`, add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, and tag the commit `v<version>` (e.g. `v1.0.0`).
+1. Bump `version` **and** `android.versionCode` in `app.json`, and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
+2. Commit, then tag and push: `git tag v1.0.0 && git push origin v1.0.0`. The tag must match `version`, or the build fails.
+3. The workflow creates a GitHub release with `local-ledger-<version>.apk` attached.
+
+**Signing:** add these repository secrets under *Settings → Secrets and variables → Actions* to sign the APK with your release key: `ANDROID_KEYSTORE_BASE64` (the keystore file, base64-encoded), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Without them the APK is signed with the public debug key, which is fine for testing but not for publishing. Keep a backup of the keystore: Android only accepts updates signed with the same key.
+
+The Android package is `com.coratealeaf.localledger` (in [app.json](app.json)). It can't be changed after the app is published.
 
 ### F-Droid
 

@@ -38,10 +38,10 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "typecheck": "tsc --noEmit",
+    "lint": "expo lint",
     "supporter-code": "node scripts/gen-supporter-code.js",
     "test": "jest",
-    "test:watch": "jest --watch",
-    "lint": "expo lint"
+    "test:watch": "jest --watch"
   },
   "private": true,
   "jest": {
