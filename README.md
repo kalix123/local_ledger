@@ -2,6 +2,8 @@
 
 A privacy-first personal finance tracker that runs entirely on your phone. Type what you spent in plain English and Local Ledger files it. There's no account, no cloud and no tracking, and it makes no network requests unless you turn on the optional AI.
 
+> **Disclaimer:** Local Ledger's code and this README were written by Claude, Anthropic's AI assistant, and reviewed by me.
+
 Built with Expo / React Native. Android is the main target; it also runs in a web browser.
 
 <p align="center"><img src="assets/logo.png" width="96" alt="Local Ledger logo"></p>
