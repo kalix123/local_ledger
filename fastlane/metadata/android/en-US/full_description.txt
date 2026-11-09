@@ -1,4 +1,4 @@
-<p>Local Ledger is a personal finance tracker that keeps everything on your phone. There is no account, no cloud sync, no ads and no tracking. It makes no network requests at all unless you turn on the optional AI helper yourself.</p>
+<p>Local Ledger is a personal finance tracker that keeps everything on your phone. There is no account, no cloud sync, no ads and no tracking. It never connects to the internet, and doesn't even ask for permission to.</p>
 
 <p><b>Type it like you'd say it.</b> Enter <i>spent 10.50 at WinCo on ice cream</i> or <i>got paid 135 plus 20 in tips</i> and Local Ledger works out the amount, income or expense, the merchant, the category, a note and the date ("yesterday", "last friday", "11/2").</p>
 
@@ -10,6 +10,5 @@
 <li>Light and dark themes</li>
 </ul>
 
-<p><b>Optional AI (off by default).</b> In Advanced mode you can connect your own model: Ollama on your own computer, or an OpenAI-compatible or Anthropic API with your own key. Cloud services show a privacy warning that you must accept first, and AI summaries only send category totals.</p>
 
 <p><b>Support.</b> Local Ledger is free. Supporters on Ko-fi get a code that unlocks extra themes, a custom theme, two extra icon packs and app badges. Every core feature works without it.</p>

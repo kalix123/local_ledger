@@ -1,12 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { Platform, Pressable, View } from 'react-native';
-import { aiReady, aiSummary, buildSummaryPayload, isCloud } from '../ai';
 import EditTransaction from '../components/EditTransaction';
 import QuickEntry from '../components/QuickEntry';
 import TransactionRow from '../components/TransactionRow';
 import { useCategory, useStore } from '../store';
 import { Transaction } from '../types';
-import { Button, Card, CatLabel, ProgressBar, SectionTitle, T, useP } from '../ui';
+import { Card, CatLabel, ProgressBar, SectionTitle, T, useP } from '../ui';
 import { currentCycle, formatMoney, round2, summarize } from '../utils';
 
 export type Tab = 'home' | 'history' | 'budgets' | 'settings';
@@ -124,8 +123,6 @@ export default function HomeScreen({ go }: { go: (t: Tab) => void }) {
         </>
       ) : null}
 
-      {advanced && aiReady(data.settings.ai) ? <AISummaryCard sum={sum} cycle={cycle} /> : null}
-
       <SectionTitle
         right={
           data.transactions.length ? (
@@ -167,65 +164,3 @@ function Stat({ label, value, color }: { label: string; value: string; color?: s
   );
 }
 
-function AISummaryCard({ sum, cycle }: { sum: ReturnType<typeof summarize>; cycle: ReturnType<typeof currentCycle> }) {
-  const p = useP();
-  const { data } = useStore();
-  const cat = useCategory();
-  const [busy, setBusy] = useState(false);
-  const [out, setOut] = useState('');
-  const [err, setErr] = useState('');
-  const [showPayload, setShowPayload] = useState(false);
-  const ai = data.settings.ai;
-
-  const ids = new Set([...Object.keys(sum.byCategory), ...Object.keys(data.budgets)]);
-  const payload = buildSummaryPayload({
-    period: cycle.label,
-    currency: data.settings.currency,
-    income: round2(sum.income),
-    spent: round2(sum.spent),
-    dayOfCycle: cycle.dayIndex,
-    daysInCycle: cycle.totalDays,
-    categories: [...ids].map((id) => ({ name: cat(id).name, spent: round2(sum.byCategory[id] ?? 0), ...(data.budgets[id] ? { budget: data.budgets[id] } : {}) })),
-  });
-
-  const run = async () => {
-    setBusy(true);
-    setErr('');
-    try {
-      setOut(await aiSummary(ai, payload));
-    } catch (e: any) {
-      setErr(e?.message ?? 'Failed');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <>
-      <SectionTitle>AI summary</SectionTitle>
-      <Card>
-        {out ? <T style={{ lineHeight: 22 }}>{out}</T> : <T muted>Get a quick read on how this month is pacing.</T>}
-        {err ? (
-          <T size={13} color={p.danger} style={{ marginTop: 8 }}>
-            {err}
-          </T>
-        ) : null}
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 12, gap: 8 }}>
-          <Button label={busy ? 'Thinking…' : out ? 'Regenerate' : 'Generate summary'} onPress={run} disabled={busy} small />
-          <Button label={showPayload ? 'Hide data' : 'What gets sent?'} kind="ghost" small onPress={() => setShowPayload((v) => !v)} />
-        </View>
-        <T size={11} muted style={{ marginTop: 8 }}>
-          Sends category totals only (no merchants, notes or individual transactions) to {isCloud(ai) ? 'cloud service ' : 'local endpoint '}
-          {ai.baseUrl}
-        </T>
-        {showPayload ? (
-          <View style={{ backgroundColor: p.surfaceAlt, borderRadius: 8, padding: 10, marginTop: 8 }}>
-            <T size={11} style={{ fontFamily: Platform.OS === 'web' ? 'monospace' : undefined }}>
-              {payload}
-            </T>
-          </View>
-        ) : null}
-      </Card>
-    </>
-  );
-}

@@ -1,6 +1,8 @@
 # Local Ledger
 
-A privacy-first personal finance tracker that runs entirely on your phone. Type what you spent in plain English and Local Ledger files it. There's no account, no cloud and no tracking, and it makes no network requests unless you turn on the optional AI.
+A privacy-first personal finance tracker that runs entirely on your phone. Type what you spent in plain English and Local Ledger files it. There's no account, no cloud and no tracking, and the Android app doesn't even have permission to use the internet.
+
+> **Disclaimer:** Local Ledger's code and this README were written by Claude, Anthropic's AI assistant, and reviewed by me.
 
 Built with Expo / React Native. Android is the main target; it also runs in a web browser.
 
@@ -21,8 +23,6 @@ Built with Expo / React Native. Android is the main target; it also runs in a we
   - custom categories
   - a budget month that starts on any day, such as payday
   - JSON and CSV backups
-  - optional AI
-- **Optional bring-your-own AI** (Advanced): Ollama on your own computer, any OpenAI-compatible endpoint, or Anthropic. Cloud services show a privacy warning that must be accepted first. AI summaries send category totals only.
 - **Icon styles**: vector icons by default, or Emoji for free.
 - **Ko-fi supporter perks** ([ko-fi.com/cora_tealeaf](https://ko-fi.com/cora_tealeaf)): an offline supporter code unlocks:
   - extra themes
@@ -34,8 +34,9 @@ Built with Expo / React Native. Android is the main target; it also runs in a we
 
 - All data is stored on the device: AsyncStorage on Android, `localStorage` on web.
 - Icons, fonts and images are packed into the app, so nothing is downloaded at runtime.
-- The only network requests are to an AI endpoint *you* configure, and only after you turn it on. The test suite fails if the app makes any other request.
-- Backups are plain JSON files you own. AI API keys are left out of backups unless you choose to include them.
+- The app makes no network requests at all, and release builds for Android don't request the `INTERNET` permission. The test suite fails if the app tries to make a request.
+- The Ko-fi link opens in your browser; the app itself never connects.
+- Backups are plain JSON files you own.
 
 ## Getting started
 
@@ -62,7 +63,6 @@ The suite lives in [`__tests__/`](__tests__):
 | `parser.test.ts` | Everyday phrases, amounts, dates (month and year boundaries, leap days), income vs expense, merchant rules, hostile input, slow-regex checks |
 | `utils.test.ts` | Money formatting, budget cycles (every day of a year, DST, invalid start days), totals, CSV escaping and formula injection |
 | `data.test.ts` | Backup validation against damaged or malicious files, chunked storage, migration, corrupted storage, 50,000-entry performance |
-| `ai.test.ts` | Local vs cloud address detection, the privacy acknowledgement, handling of untrusted AI replies, no extra network requests |
 | `supporter-theme.test.ts` | SHA-256 test vectors, supporter codes, theme readability, every icon in every pack |
 | `app.test.tsx` | The full app driven like a user: adding entries, undo, restart, corrupted storage, 20,000 entries, supporter unlock, every screen |
 
@@ -94,7 +94,7 @@ The repo is set up for [F-Droid](https://f-droid.org/en/docs/Submitting_to_F-Dro
 
 - GPL-3.0 licence and only FOSS dependencies (no Google Play Services, Firebase or analytics).
 - `expo.autolinking.android.buildFromSource` in `package.json` makes Expo compile its Android modules from source instead of using the prebuilt `.aar` files that ship in `node_modules`.
-- Unused permissions Expo adds by default are blocked in `app.json`; the app only requests `INTERNET` (for the optional AI).
+- Unused permissions Expo adds by default are blocked in `app.json`, and [`plugins/withNoInternetInRelease.js`](plugins/withNoInternetInRelease.js) removes `INTERNET` from release builds, so the published app requests no permissions at all. Development builds keep `INTERNET` because they load code from the Metro dev server.
 - Store text, icon, screenshots and changelogs are in [`fastlane/metadata/android/en-US`](fastlane/metadata/android/en-US). The icon comes from `scripts/render-icons.js`.
 
 ## Project layout
@@ -105,7 +105,6 @@ src/parser.ts         plain-English → transaction
 src/store.tsx         app state and actions
 src/storage.ts        on-device persistence (chunked for Android's per-value limit)
 src/sanitize.ts       validates anything loaded from disk or a backup
-src/ai.ts             optional bring-your-own-key AI
 src/theme.ts          palettes and the Custom theme
 src/icons.tsx         one icon vocabulary, four looks
 src/screens/          Home, History, Budgets, Settings
@@ -116,9 +115,7 @@ __tests__/            Jest suite
 
 ## Notes
 
-- **Ollama from the web build** needs CORS: start it with `OLLAMA_ORIGINS="*"`. On a phone, use your computer's LAN IP instead of `localhost`.
 - **Storage limits**: transactions are saved in chunks of 1,000, which avoids Android's ~2 MB limit on a single stored value. Android's default AsyncStorage database holds about 6 MB, roughly 20,000 transactions.
-- **API keys** are kept in app storage, which is not encrypted. `expo-secure-store` would be the next step.
 - **Icons**: regenerate the launcher icon, adaptive icon, splash and favicon with `npm install --no-save sharp@0.34.4 && node scripts/render-icons.js assets`.
 - **App badge** changes the in-app icon only. Changing the Android launcher icon needs a config plugin and a development build.
 

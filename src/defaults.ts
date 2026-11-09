@@ -69,14 +69,6 @@ export const DEFAULT_SETTINGS: Settings = {
   iconPack: 'icons',
   appIcon: 'coin',
   supporterCode: '',
-  ai: {
-    provider: 'none',
-    baseUrl: '',
-    model: '',
-    apiKey: '',
-    cloudRiskAcknowledged: false,
-    useForUnclearEntries: true,
-  },
 };
 
 export function defaultData(): AppData {
@@ -86,15 +78,10 @@ export function defaultData(): AppData {
     categories: DEFAULT_CATEGORIES.map((c) => ({ ...c, keywords: [...c.keywords] })),
     budgets: { groceries: 400, dining: 150, entertainment: 60 },
     rules: [],
-    settings: { ...DEFAULT_SETTINGS, ai: { ...DEFAULT_SETTINGS.ai }, customTheme: { ...DEFAULT_SETTINGS.customTheme } },
+    settings: { ...DEFAULT_SETTINGS, customTheme: { ...DEFAULT_SETTINGS.customTheme } },
   };
 }
 
-export const AI_PRESETS: Record<Exclude<import('./types').AIProvider, 'none'>, { baseUrl: string; model: string; cloud: boolean; label: string }> = {
-  ollama: { baseUrl: 'http://localhost:11434', model: 'llama3.2', cloud: false, label: 'Ollama (local)' },
-  openai: { baseUrl: 'https://api.openai.com/v1', model: 'gpt-4o-mini', cloud: true, label: 'OpenAI-compatible' },
-  anthropic: { baseUrl: 'https://api.anthropic.com', model: 'claude-haiku-5-5', cloud: true, label: 'Anthropic' },
-};
 
 /** Change this to your own Ko-fi page. */
 export const KOFI_URL = 'https://ko-fi.com/cora_tealeaf';

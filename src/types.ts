@@ -10,7 +10,7 @@ export interface Transaction {
   date: string; // local YYYY-MM-DD
   raw: string; // original text the user typed
   createdAt: number;
-  source: 'parser' | 'ai' | 'manual';
+  source: 'parser' | 'manual';
 }
 
 export interface Category {
@@ -28,17 +28,6 @@ export interface MerchantRule {
   match: string; // lower-case substring to look for
   merchant: string; // display name to use
   categoryId: string;
-}
-
-export type AIProvider = 'none' | 'ollama' | 'openai' | 'anthropic';
-
-export interface AISettings {
-  provider: AIProvider;
-  baseUrl: string;
-  model: string;
-  apiKey: string;
-  cloudRiskAcknowledged: boolean;
-  useForUnclearEntries: boolean;
 }
 
 export type ThemeId = 'system' | 'light' | 'dark' | 'midnight' | 'forest' | 'sunset' | 'paper' | 'custom';
@@ -62,7 +51,6 @@ export interface Settings {
   iconPack: IconPackId;
   appIcon: AppIconId;
   supporterCode: string; // validated offline; empty = not a supporter
-  ai: AISettings;
 }
 
 export interface AppData {

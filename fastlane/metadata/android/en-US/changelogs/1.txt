@@ -1,1 +1,1 @@
-First release: plain-English entry, budgets, history and search, Basic and Advanced modes, JSON/CSV backups, optional bring-your-own AI.
+First release: plain-English entry, budgets, history and search, Basic and Advanced modes, JSON/CSV backups, and no internet permission.

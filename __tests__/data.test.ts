@@ -130,12 +130,10 @@ describe('sanitize: repairs damaged data', () => {
       iconPack: 'toString',
       appIcon: 'hacked',
       supporterCode: 12345,
-      ai: { provider: 'evilcorp', baseUrl: 7, cloudRiskAcknowledged: 'yes', useForUnclearEntries: 'no' },
     };
     const s = sanitize(raw).settings;
     expect(s).toMatchObject({ mode: 'basic', currency: '$', cycleStartDay: 1, theme: 'system', iconPack: 'icons', appIcon: 'coin', supporterCode: '12345' });
     expect(s.customTheme).toEqual({ ...defaultData().settings.customTheme, accent: '#00FF00' });
-    expect(s.ai).toMatchObject({ provider: 'none', baseUrl: '7', cloudRiskAcknowledged: false, useForUnclearEntries: true });
   });
 
   test.each([
@@ -149,10 +147,14 @@ describe('sanitize: repairs damaged data', () => {
     expect(sanitize(raw).settings.cycleStartDay).toBe(out);
   });
 
-  test('the cloud-AI acknowledgement is only accepted as literal true', () => {
+  test('settings this version does not know about are dropped, not kept', () => {
     const raw = base();
-    raw.settings.ai = { provider: 'openai', baseUrl: 'https://api.openai.com/v1', cloudRiskAcknowledged: 1 };
-    expect(sanitize(raw).settings.ai.cloudRiskAcknowledged).toBe(false);
+    raw.settings.someFutureFeature = { token: 'secret', url: 'https://example.com' };
+    raw.transactions = [{ id: 'a', amount: 5, date: '2026-11-01', type: 'expense', categoryId: 'other', merchant: '', note: '', raw: 'x', createdAt: 1, source: 'something-else' }];
+    const d = sanitize(raw);
+    expect(Object.keys(d.settings)).not.toContain('someFutureFeature');
+    expect(JSON.stringify(d)).not.toContain('secret');
+    expect(d.transactions[0].source).toBe('parser');
   });
 
   test('oversized strings are trimmed', () => {

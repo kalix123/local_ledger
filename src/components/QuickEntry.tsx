@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, TextInputInstance, View } from 'react-native';
-import { aiParseEntry, aiReady } from '../ai';
+import { Pressable, ScrollView, Text, TextInput, TextInputInstance, View } from 'react-native';
 import { Icon } from '../icons';
 import { parseEntry } from '../parser';
 import { useCategory, useStore } from '../store';
@@ -24,16 +23,10 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
   const [override, setOverride] = useState<{ type?: 'income' | 'expense'; categoryId?: string; amount?: string }>({});
   const [picking, setPicking] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [aiResult, setAiResult] = useState<{ forText: string; entry: ParsedEntry } | null>(null);
-  const [aiBusy, setAiBusy] = useState(false);
-  const [aiError, setAiError] = useState('');
   const [toast, setToast] = useState<{ tx: Transaction; msg: string } | null>(null);
   const [exampleIdx, setExampleIdx] = useState(0);
   const inputRef = useRef<TextInputInstance>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const ai = data.settings.ai;
-  const aiOn = data.settings.mode === 'advanced' && aiReady(ai);
 
   useEffect(() => {
     const t = setInterval(() => setExampleIdx((i) => (i + 1) % EXAMPLES.length), 4000);
@@ -45,9 +38,8 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
 
   const parsed = useMemo<ParsedEntry | null>(() => {
     if (!text.trim()) return null;
-    if (aiResult && aiResult.forText === text) return aiResult.entry;
     return parseEntry(text, data.categories, data.rules);
-  }, [text, data.categories, data.rules, aiResult]);
+  }, [text, data.categories, data.rules]);
 
   const entry = useMemo(() => {
     if (!parsed) return null;
@@ -62,8 +54,6 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
     setText('');
     setOverride({});
     setPicking(false);
-    setAiResult(null);
-    setAiError('');
   };
 
   const showToast = (tx: Transaction, msg: string) => {
@@ -72,29 +62,8 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
     toastTimer.current = setTimeout(() => setToast(null), 5000);
   };
 
-  const askAI = async () => {
-    if (!text.trim()) return;
-    setAiBusy(true);
-    setAiError('');
-    try {
-      const res = await aiParseEntry(ai, text, data.categories);
-      setAiResult({ forText: text, entry: res });
-      setOverride({});
-    } catch (e: any) {
-      setAiError(e?.message ?? 'AI request failed');
-    } finally {
-      setAiBusy(false);
-    }
-  };
-
-  const submit = async () => {
-    if (!entry || aiBusy) return;
-    const usedAI = !!aiResult && aiResult.forText === text;
-    // Messy text + AI configured → get a second opinion first, user confirms with another Enter.
-    if (!usedAI && aiOn && ai.useForUnclearEntries && !entry.confident && override.categoryId === undefined && override.amount === undefined) {
-      await askAI();
-      return;
-    }
+  const submit = () => {
+    if (!entry) return;
     if (entry.amount === null) {
       setOverride((o) => ({ ...o, amount: o.amount ?? '' }));
       return;
@@ -107,7 +76,7 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
       note: entry.note,
       date: entry.date,
       raw: text.trim(),
-      source: usedAI ? 'ai' : 'parser',
+      source: 'parser',
     });
     if (override.categoryId && remember && entry.merchant) {
       addRule({ match: entry.merchant.toLowerCase(), merchant: entry.merchant, categoryId: entry.categoryId });
@@ -158,7 +127,6 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
           onChangeText={(v) => {
             setText(v);
             if (!v) reset();
-            setAiError('');
           }}
           onSubmitEditing={submit}
           submitBehavior="submit"
@@ -183,7 +151,7 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          {aiBusy ? <ActivityIndicator color={p.accentText} /> : <Icon name="enter" size={22} color={entry ? p.accentText : p.textMuted} />}
+          <Icon name="enter" size={22} color={entry ? p.accentText : p.textMuted} />
         </Pressable>
       </View>
 
@@ -208,7 +176,6 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
             <Chip cat={c} label={c.name} trailing="chevron-down" active={picking} onPress={() => setPicking((v) => !v)} />
             {entry.merchant ? <Chip icon="store" label={entry.merchant} /> : null}
             <Chip icon="calendar" label={friendlyDate(entry.date)} />
-            {aiResult?.forText === text ? <Chip icon="sparkle" label="AI" /> : null}
           </View>
           {entry.note ? (
             <T size={13} muted style={{ marginTop: 2 }}>
@@ -246,26 +213,9 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
 
           <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, flexWrap: 'wrap' }}>
             <T size={12} muted style={{ flex: 1 }}>
-              {entry.amount === null
-                ? 'No amount found — tap “No amount” to type one.'
-                : !entry.confident && aiOn && ai.useForUnclearEntries && !aiResult
-                  ? 'Unclear category — press Enter to ask your AI, or pick one.'
-                  : 'Press Enter to save · tap a chip to adjust'}
+              {entry.amount === null ? 'No amount found — tap “No amount” to type one.' : 'Press Enter to save · tap a chip to adjust'}
             </T>
-            {aiOn && !aiResult ? (
-              <Pressable onPress={askAI} disabled={aiBusy} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Icon name="sparkle" size={13} color={p.accent} />
-                <T size={12} weight="700" color={p.accent}>
-                  Ask AI
-                </T>
-              </Pressable>
-            ) : null}
           </View>
-          {aiError ? (
-            <T size={12} color={p.danger} style={{ marginTop: 6 }}>
-              {aiError}
-            </T>
-          ) : null}
         </View>
       ) : null}
 

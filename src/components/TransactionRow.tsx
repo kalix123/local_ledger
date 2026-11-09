@@ -26,7 +26,6 @@ export default function TransactionRow({ tx, onPress }: { tx: Transaction; onPre
         </T>
         <T size={12} muted numberOfLines={1} style={{ marginTop: 2 }}>
           {subtitle}
-          {tx.source === 'ai' ? ' · AI' : ''}
         </T>
       </View>
       <T weight="700" color={tx.type === 'income' ? p.income : p.expense}>

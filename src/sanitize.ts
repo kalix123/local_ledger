@@ -6,7 +6,7 @@
 import { DEFAULT_CATEGORIES, defaultData, DEFAULT_SETTINGS } from './defaults';
 import { ICON_PACKS, isIconName } from './icons';
 import { APP_ICONS, HEX_RE, THEMES } from './theme';
-import { AIProvider, AppData, AppIconId, Category, IconPackId, MerchantRule, Settings, ThemeId, Transaction } from './types';
+import { AppData, AppIconId, Category, IconPackId, MerchantRule, Settings, ThemeId, Transaction } from './types';
 import { uid } from './utils';
 
 /** Largest single amount accepted (guards against typos like 1e300 breaking totals). */
@@ -79,7 +79,7 @@ function sanitizeTransactions(raw: unknown[], categories: Category[]): Transacti
       date,
       raw: str(t.raw, 500),
       createdAt: Number.isFinite(Number(t.createdAt)) ? Number(t.createdAt) : Date.now(),
-      source: t.source === 'ai' || t.source === 'manual' ? t.source : 'parser',
+      source: t.source === 'manual' ? 'manual' : 'parser',
     });
   }
   return out;
@@ -112,12 +112,10 @@ function sanitizeRules(raw: unknown, categories: Category[]): MerchantRule[] {
 }
 
 const THEME_IDS: ThemeId[] = ['system', 'custom', ...(Object.keys(THEMES) as ThemeId[])];
-const PROVIDERS: AIProvider[] = ['none', 'ollama', 'openai', 'anthropic'];
 
 function sanitizeSettings(raw: unknown): Settings {
   const s = isObj(raw) ? raw : {};
   const d = DEFAULT_SETTINGS;
-  const ai = isObj(s.ai) ? s.ai : {};
   const ct = isObj(s.customTheme) ? s.customTheme : {};
   const hex = (v: unknown, f: string) => (typeof v === 'string' && HEX_RE.test(v) ? v : f);
   const day = Number(s.cycleStartDay);
@@ -130,14 +128,6 @@ function sanitizeSettings(raw: unknown): Settings {
     iconPack: typeof s.iconPack === 'string' && Object.prototype.hasOwnProperty.call(ICON_PACKS, s.iconPack) ? (s.iconPack as IconPackId) : d.iconPack,
     appIcon: typeof s.appIcon === 'string' && Object.prototype.hasOwnProperty.call(APP_ICONS, s.appIcon) ? (s.appIcon as AppIconId) : d.appIcon,
     supporterCode: str(s.supporterCode, 40),
-    ai: {
-      provider: PROVIDERS.includes(ai.provider) ? ai.provider : d.ai.provider,
-      baseUrl: str(ai.baseUrl, 300),
-      model: str(ai.model, 120),
-      apiKey: str(ai.apiKey, 500),
-      cloudRiskAcknowledged: ai.cloudRiskAcknowledged === true,
-      useForUnclearEntries: typeof ai.useForUnclearEntries === 'boolean' ? ai.useForUnclearEntries : d.ai.useForUnclearEntries,
-    },
   };
 }
 

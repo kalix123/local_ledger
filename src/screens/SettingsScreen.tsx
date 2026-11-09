@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Linking, Platform, Pressable, Text, TextInput, View } from 'react-native';
-import { aiParseEntry, isCloud, isLocalUrl } from '../ai';
 import AppBadge from '../components/AppBadge';
 import { CATEGORY_ICON_CHOICES, emojiFor, Icon, ICON_PACKS, IconName } from '../icons';
-import { AI_PRESETS, KOFI_URL } from '../defaults';
+import { KOFI_URL } from '../defaults';
 import { confirm, notify, pickTextFile, saveTextFile } from '../platform';
 import { sanitize, useCategory, useStore } from '../store';
 import { isValidSupporterCode, normalizeCode } from '../supporter';
 import { APP_ICONS, contrast, DEFAULT_CUSTOM_THEME, HEX_RE, THEMES } from '../theme';
-import { AIProvider, AppIconId, CustomTheme, IconPackId, ThemeId, TxType } from '../types';
-import { Button, Card, CatLabel, Chip, Divider, Field, SectionTitle, Segmented, T, ToggleRow, useP } from '../ui';
+import { AppIconId, CustomTheme, IconPackId, ThemeId, TxType } from '../types';
+import { Button, Card, CatLabel, Chip, Divider, Field, SectionTitle, Segmented, T, useP } from '../ui';
 import { toCSV, today } from '../utils';
 
 export default function SettingsScreen() {
@@ -30,8 +29,8 @@ export default function SettingsScreen() {
         />
         <T size={12} muted style={{ marginTop: 8 }}>
           {advanced
-            ? 'Advanced unlocks merchant rules, custom categories, budget cycle, backups and optional AI.'
-            : 'Basic keeps things simple: quick entry, budgets and a dashboard. Switch to Advanced for rules, backups and AI.'}
+            ? 'Advanced unlocks merchant rules, custom categories, a custom budget cycle and backups.'
+            : 'Basic keeps things simple: quick entry, budgets and a dashboard. Switch to Advanced for rules and backups.'}
         </T>
       </Card>
 
@@ -42,7 +41,6 @@ export default function SettingsScreen() {
           <CycleSection />
           <RulesSection />
           <CategoriesSection />
-          <AISection />
           <DataSection />
         </>
       ) : null}
@@ -60,8 +58,7 @@ function PrivacyCard() {
         <T weight="700">Your data stays on this device</T>
       </View>
       <T size={13} muted style={{ marginTop: 4, lineHeight: 19 }}>
-        No account, no cloud sync, no analytics, no bank connections. Everything is stored locally and the app works fully offline. The only network
-        requests ever made are to an AI endpoint you configure yourself in Advanced mode.
+        No account, no cloud sync, no analytics, no bank connections. Everything is stored locally, and the app never connects to the internet.
       </T>
     </Card>
   );
@@ -487,135 +484,13 @@ function CategoriesSection() {
   );
 }
 
-/* -------------------------------------------------------------------- AI */
-
-function AISection() {
-  const p = useP();
-  const { data, updateAI } = useStore();
-  const ai = data.settings.ai;
-  const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState('');
-  const cloud = isCloud(ai);
-
-  const pickProvider = (provider: AIProvider) => {
-    if (provider === 'none') return updateAI({ provider });
-    const preset = AI_PRESETS[provider];
-    updateAI({ provider, baseUrl: preset.baseUrl, model: preset.model, cloudRiskAcknowledged: false });
-    setTestResult('');
-  };
-
-  const test = async () => {
-    setTesting(true);
-    setTestResult('');
-    try {
-      const r = await aiParseEntry(ai, 'grabbed lunch at the taco truck for 12 bucks', data.categories);
-      setTestResult(`Connected. Test parse: ${r.type} ${r.amount ?? '?'} → ${r.categoryId}`);
-    } catch (e: any) {
-      setTestResult(`Error: ${e?.message ?? 'Failed'}`);
-    } finally {
-      setTesting(false);
-    }
-  };
-
-  return (
-    <>
-      <SectionTitle>AI assist (optional, bring your own)</SectionTitle>
-      <Card>
-        <T size={13} muted style={{ marginBottom: 10, lineHeight: 19 }}>
-          The built-in parser handles most entries offline. Optionally connect a model to interpret messy text and write monthly summaries. Off by default.
-        </T>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          <Chip label="Off" active={ai.provider === 'none'} onPress={() => pickProvider('none')} />
-          <Chip icon="local" label="Ollama (local)" active={ai.provider === 'ollama'} onPress={() => pickProvider('ollama')} />
-          <Chip label="OpenAI-compatible" active={ai.provider === 'openai'} onPress={() => pickProvider('openai')} />
-          <Chip label="Anthropic" active={ai.provider === 'anthropic'} onPress={() => pickProvider('anthropic')} />
-        </View>
-
-        {ai.provider !== 'none' ? (
-          <>
-            {/* The unmissable warning. Always shown for any non-local endpoint. */}
-            {cloud ? (
-              <View style={{ backgroundColor: p.dangerBg, borderColor: p.danger, borderWidth: 2, borderRadius: 12, padding: 14, marginVertical: 12 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Icon name="warning" size={20} color={p.danger} pack="icons" />
-                  <T weight="800" color={p.danger} size={16} style={{ flex: 1 }}>
-                    Privacy warning: this is a cloud AI service
-                  </T>
-                </View>
-                <T color={p.danger} size={13} style={{ marginTop: 6, lineHeight: 19 }}>
-                  We strongly advise against sending financial data to publicly hosted LLMs. Anything you send to {hostOf(ai.baseUrl)} leaves your device and
-                  is governed by that company&apos;s retention and training policies, not ours. It may be logged, reviewed by humans, or kept indefinitely.
-                </T>
-                <T color={p.danger} size={13} style={{ marginTop: 6, lineHeight: 19 }}>
-                  Safer: run a model locally with Ollama or LM Studio and point this at localhost or your LAN.
-                </T>
-                <View style={{ marginTop: 8 }}>
-                  <ToggleRow
-                    label="I understand the risk and still want to use a cloud model"
-                    value={ai.cloudRiskAcknowledged}
-                    onChange={(v) => updateAI({ cloudRiskAcknowledged: v })}
-                  />
-                </View>
-              </View>
-            ) : (
-              <View style={{ backgroundColor: p.surfaceAlt, borderRadius: 12, padding: 12, marginVertical: 12, borderLeftWidth: 4, borderLeftColor: p.ok }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                  <Icon name="local" size={16} color={p.ok} />
-                  <T weight="700">Local endpoint</T>
-                </View>
-                <T size={12} muted style={{ marginTop: 4, lineHeight: 18 }}>
-                  {hostOf(ai.baseUrl) || 'This host'} is on your own machine/network, so entries never leave it. On a phone, use your computer&apos;s LAN IP (e.g.
-                  http://192.168.1.20:11434). For the web build, start Ollama with OLLAMA_ORIGINS=&quot;*&quot; so the browser may call it.
-                </T>
-              </View>
-            )}
-
-            <Field label="Endpoint URL" value={ai.baseUrl} onChangeText={(baseUrl) => updateAI({ baseUrl })} autoCapitalize="none" autoCorrect={false} />
-            <Field label="Model" value={ai.model} onChangeText={(model) => updateAI({ model })} autoCapitalize="none" autoCorrect={false} />
-            <Field
-              label={`API key${ai.provider === 'ollama' || isLocalUrl(ai.baseUrl) ? ' (usually not needed locally)' : ''}`}
-              value={ai.apiKey}
-              onChangeText={(apiKey) => updateAI({ apiKey })}
-              secureTextEntry
-              autoCapitalize="none"
-              autoCorrect={false}
-              editable={!cloud || ai.cloudRiskAcknowledged}
-              hint="Stored only on this device, inside the app's local storage. It is included in JSON backups only if you choose to."
-            />
-            <ToggleRow
-              label="Use AI for unclear entries"
-              hint="When the offline parser can't find an amount or category, ask the model before saving. You always confirm the result."
-              value={ai.useForUnclearEntries}
-              onChange={(v) => updateAI({ useForUnclearEntries: v })}
-            />
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 10 }}>
-              <Button label={testing ? 'Testing…' : 'Test connection'} kind="secondary" small onPress={test} disabled={testing || (cloud && !ai.cloudRiskAcknowledged)} />
-            </View>
-            {testResult ? (
-              <T size={13} color={testResult.startsWith('Connected') ? p.ok : p.danger} style={{ marginTop: 8 }}>
-                {testResult}
-              </T>
-            ) : null}
-          </>
-        ) : null}
-      </Card>
-    </>
-  );
-}
-
-function hostOf(url: string) {
-  return url.replace(/^https?:\/\//i, '').split('/')[0];
-}
-
 /* ------------------------------------------------------------------ data */
 
 function DataSection() {
   const { data, replaceAll, wipe } = useStore();
-  const [includeKey, setIncludeKey] = useState(false);
 
   const exportJSON = async () => {
-    const copy = { ...data, settings: { ...data.settings, ai: { ...data.settings.ai, apiKey: includeKey ? data.settings.ai.apiKey : '' } } };
-    await saveTextFile(`local-ledger-backup-${today()}.json`, JSON.stringify(copy, null, 2), 'application/json');
+    await saveTextFile(`local-ledger-backup-${today()}.json`, JSON.stringify(data, null, 2), 'application/json');
   };
   const exportCSV = () => saveTextFile(`local-ledger-transactions-${today()}.csv`, toCSV(data), 'text/csv');
   const importJSON = async () => {
@@ -630,7 +505,6 @@ function DataSection() {
         true,
       );
       if (!ok) return;
-      if (!next.settings.ai.apiKey) next.settings.ai.apiKey = data.settings.ai.apiKey;
       replaceAll(next);
       notify('Backup restored', `${next.transactions.length} transactions imported.`);
     } catch (e: any) {
@@ -649,8 +523,7 @@ function DataSection() {
         <T size={13} muted style={{ marginBottom: 10, lineHeight: 19 }}>
           {data.transactions.length} transactions on this device. Backups are plain JSON files you own — store them wherever you like.
         </T>
-        <ToggleRow label="Include AI API key in backup" value={includeKey} onChange={setIncludeKey} />
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 }}>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
           <Button label="Export backup (.json)" onPress={exportJSON} />
           <Button label="Export CSV" kind="secondary" onPress={exportCSV} />
           <Button label="Import backup…" kind="secondary" onPress={importJSON} />

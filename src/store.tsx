@@ -5,7 +5,7 @@ import { sanitize } from './sanitize';
 import { loadRaw, save } from './storage';
 import { isValidSupporterCode } from './supporter';
 import { Palette, resolvePalette } from './theme';
-import { AISettings, AppData, Category, MerchantRule, Settings, Transaction } from './types';
+import { AppData, Category, MerchantRule, Settings, Transaction } from './types';
 import { uid } from './utils';
 
 type Updater = (d: AppData) => AppData;
@@ -24,7 +24,6 @@ interface Store {
   restoreTransaction: (t: Transaction) => void;
   setBudget: (categoryId: string, amount: number | null) => void;
   updateSettings: (patch: Partial<Settings>) => void;
-  updateAI: (patch: Partial<AISettings>) => void;
   addRule: (r: Omit<MerchantRule, 'id'>) => void;
   deleteRule: (id: string) => void;
   addCategory: (c: Omit<Category, 'id'>) => void;
@@ -122,8 +121,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           return { ...d, budgets };
         }),
       updateSettings: (patch: Partial<Settings>) => update((d) => ({ ...d, settings: { ...d.settings, ...patch } })),
-      updateAI: (patch: Partial<AISettings>) =>
-        update((d) => ({ ...d, settings: { ...d.settings, ai: { ...d.settings.ai, ...patch } } })),
       addRule: (r: Omit<MerchantRule, 'id'>) =>
         update((d) => {
           const match = r.match.trim().toLowerCase();
