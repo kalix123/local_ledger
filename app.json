@@ -1,17 +1,18 @@
 {
   "expo": {
-    "name": "FinTrackerApp",
+    "name": "FinTrack",
     "slug": "FinTrackerApp",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.coratealeaf.fintrack",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0F766E",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -19,7 +20,26 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "name": "FinTrack",
+      "shortName": "FinTrack",
+      "themeColor": "#0F766E",
+      "backgroundColor": "#0F766E"
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#0F766E",
+          "dark": {
+            "image": "./assets/splash-icon.png",
+            "backgroundColor": "#0B4F4A"
+          }
+        }
+      ]
+    ]
   }
 }
