@@ -79,13 +79,15 @@ Paste the printed hash into `SUPPORTER_CODE_HASHES` and give the code to support
 
 ## Building for release
 
-[GitHub Actions](.github/workflows/android.yml) builds the APK on every push to `main` and on pull requests. It runs the tests, generates the Android project with `expo prebuild`, and compiles it with Gradle. The APK is attached to each run under **Actions → Android build → Artifacts**. You can also start a build by hand with **Run workflow**.
+[GitHub Actions](.github/workflows/android.yml) builds the APK on every push to `main` and on pull requests. It runs the tests, generates the Android project with `expo prebuild`, and compiles it with Gradle. It produces two APKs: `local-ledger-<version>-arm64-v8a.apk` for practically every current phone, and `-armeabi-v7a.apk` for older 32-bit phones. Building one per processor type keeps each download small, because each carries only one copy of the native libraries. Find them under **Actions → Android build → Artifacts**, with a size breakdown in the run summary. You can also start a build by hand with **Run workflow**.
+
+Pushing to `main` only builds. A GitHub release is created only when you push a version tag (below).
 
 To publish a release:
 
 1. Bump `version` **and** `android.versionCode` in `app.json`, and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 2. Commit, then tag and push: `git tag v1.0.0 && git push origin v1.0.0`. The tag must match `version`, or the build fails.
-3. The workflow creates a GitHub release with `local-ledger-<version>.apk` attached.
+3. The workflow creates a GitHub release with both APKs attached.
 
 **Signing:** add these repository secrets under *Settings → Secrets and variables → Actions* to sign the APK with your release key: `ANDROID_KEYSTORE_BASE64` (the keystore file, base64-encoded), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Without them the APK is signed with the public debug key, which is fine for testing but not for publishing. Keep a backup of the keystore: Android only accepts updates signed with the same key.
 
@@ -98,6 +100,7 @@ The repo is set up for [F-Droid](https://f-droid.org/en/docs/Submitting_to_F-Dro
 - GPL-3.0 licence and only FOSS dependencies (no Google Play Services, Firebase or analytics).
 - `expo.autolinking.android.buildFromSource` in `package.json` makes Expo compile its Android modules from source instead of using the prebuilt `.aar` files that ship in `node_modules`.
 - Unused permissions Expo adds by default are blocked in `app.json`, and [`plugins/withNoInternetInRelease.js`](plugins/withNoInternetInRelease.js) removes `INTERNET` from release builds, so the published app requests no permissions at all. Development builds keep `INTERNET` because they load code from the Metro dev server.
+- [`plugins/withSmallerApk.js`](plugins/withSmallerApk.js) compresses the native libraries in the APK and drops the unused GIF and WebP image decoders.
 - Store text, icon, screenshots and changelogs are in [`fastlane/metadata/android/en-US`](fastlane/metadata/android/en-US). The icon comes from `scripts/render-icons.js`.
 
 ## Project layout

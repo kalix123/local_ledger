@@ -7,6 +7,9 @@
 # Stage 1 (Expo): `expo prebuild` generates the android/ project from app.json and plugins/.
 # Stage 2 (Gradle): `gradlew assembleRelease` compiles it into an APK.
 #
+# Output: local-ledger-<version>-arm64-v8a.apk (almost every phone) and -armeabi-v7a.apk (older
+# 32-bit phones).
+#
 # Signing: add these repository secrets (Settings → Secrets and variables → Actions) to sign
 # with your own release key. Without them the APK is signed with the public debug key, which is
 # fine for testing but not for publishing.
@@ -92,9 +95,17 @@ jobs:
         env:
           CI: 1
 
-      - name: Compile the release APK (Gradle)
+      # One APK per processor type (ABI), so each carries a single copy of the native libraries.
+      # arm64-v8a covers practically every phone from the last several years; armeabi-v7a is for
+      # older 32-bit phones. x86/x86_64 (emulators, a few Chromebooks) are left out.
+      - name: Compile release APKs (Gradle), one per processor type
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: |
+          mkdir -p ../dist
+          for abi in arm64-v8a armeabi-v7a; do
+            ./gradlew assembleRelease -PreactNativeArchitectures=$abi
+            cp app/build/outputs/apk/release/app-release.apk "../dist/local-ledger-${{ steps.version.outputs.name }}-$abi.apk"
+          done
 
       - name: Sign with the release key
         if: env.ANDROID_KEYSTORE_BASE64 != ''
@@ -105,23 +116,44 @@ jobs:
         run: |
           echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/release.keystore"
           BUILD_TOOLS="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)"
-          "$BUILD_TOOLS/apksigner" sign \
-            --ks "$RUNNER_TEMP/release.keystore" \
-            --ks-pass env:KEYSTORE_PASSWORD \
-            --ks-key-alias "$KEY_ALIAS" \
-            --key-pass env:KEY_PASSWORD \
-            android/app/build/outputs/apk/release/app-release.apk
-          "$BUILD_TOOLS/apksigner" verify --print-certs android/app/build/outputs/apk/release/app-release.apk
+          for apk in dist/*.apk; do
+            "$BUILD_TOOLS/apksigner" sign \
+              --ks "$RUNNER_TEMP/release.keystore" \
+              --ks-pass env:KEYSTORE_PASSWORD \
+              --ks-key-alias "$KEY_ALIAS" \
+              --key-pass env:KEY_PASSWORD \
+              "$apk"
+            "$BUILD_TOOLS/apksigner" verify --print-certs "$apk"
+          done
           rm -f "$RUNNER_TEMP/release.keystore"
 
       - name: Warn when using the debug key
         if: env.ANDROID_KEYSTORE_BASE64 == ''
-        run: echo "::warning::No ANDROID_KEYSTORE_BASE64 secret, so this APK is signed with the debug key. Fine for testing, not for publishing."
+        run: echo "::warning::No ANDROID_KEYSTORE_BASE64 secret, so these APKs are signed with the debug key. Fine for testing, not for publishing."
 
-      - name: Name the APK
+      # Writes a size table for each APK (by top-level folder, compressed bytes) to the run summary.
+      - name: Report APK sizes
         run: |
-          mkdir -p dist
-          cp android/app/build/outputs/apk/release/app-release.apk "dist/local-ledger-${{ steps.version.outputs.name }}.apk"
+          {
+            for apk in dist/*.apk; do
+              echo "### $(basename "$apk"): $(du -h "$apk" | cut -f1)"
+              echo
+              echo "| Part | Size in APK |"
+              echo "|---|---:|"
+              # unzip -v columns: 1 = uncompressed size, 3 = size in APK, 8 = path
+              unzip -v "$apk" \
+                | awk '$1 ~ /^[0-9]+$/ && NF >= 8 {
+                    n = split($8, p, "/")
+                    key = (p[1] == "lib" && n > 2) ? p[1] "/" p[2] : (n > 1 ? p[1] "/" : p[1])
+                    size[key] += $3
+                  }
+                  END { for (k in size) printf "%d %s\n", size[k], k }' \
+                | sort -rn | head -12 \
+                | awk '{ printf "| %s | %.1f MB |\n", $2, $1 / 1048576 }'
+              echo
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
 
       - uses: actions/upload-artifact@v7
         with:

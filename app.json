@@ -47,7 +47,8 @@
           }
         }
       ],
-      "./plugins/withNoInternetInRelease"
+      "./plugins/withNoInternetInRelease",
+      "./plugins/withSmallerApk"
     ]
   }
 }
