@@ -86,7 +86,16 @@ npx eas-cli@latest build --platform android
 ```
 
 - The Android package is `com.coratealeaf.localledger` (in [app.json](app.json)). It can't be changed after the app is published on Google Play.
-- Bump `version` in `app.json` for each store release.
+- For each release, bump `version` **and** `android.versionCode` in `app.json`, add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`, and tag the commit `v<version>` (e.g. `v1.0.0`).
+
+### F-Droid
+
+The repo is set up for [F-Droid](https://f-droid.org/en/docs/Submitting_to_F-Droid_Quick_Start_Guide/):
+
+- GPL-3.0 licence and only FOSS dependencies (no Google Play Services, Firebase or analytics).
+- `expo.autolinking.android.buildFromSource` in `package.json` makes Expo compile its Android modules from source instead of using the prebuilt `.aar` files that ship in `node_modules`.
+- Unused permissions Expo adds by default are blocked in `app.json`; the app only requests `INTERNET` (for the optional AI).
+- Store text, icon, screenshots and changelogs are in [`fastlane/metadata/android/en-US`](fastlane/metadata/android/en-US). The icon comes from `scripts/render-icons.js`.
 
 ## Project layout
 
@@ -112,6 +121,12 @@ __tests__/            Jest suite
 - **API keys** are kept in app storage, which is not encrypted. `expo-secure-store` would be the next step.
 - **Icons**: regenerate the launcher icon, adaptive icon, splash and favicon with `npm install --no-save sharp@0.34.4 && node scripts/render-icons.js assets`.
 - **App badge** changes the in-app icon only. Changing the Android launcher icon needs a config plugin and a development build.
+
+## License
+
+Copyright (C) 2026 Cora Tealeaf
+
+Local Ledger is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See [LICENSE](LICENSE).
 
 ## Support
 

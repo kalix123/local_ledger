@@ -1,6 +1,7 @@
 {
   "name": "local-ledger",
   "version": "1.0.0",
+  "license": "GPL-3.0-or-later",
   "main": "index.ts",
   "dependencies": {
     "@expo/metro-runtime": "~58.0.17",
@@ -55,5 +56,14 @@
       "src/**/*.{ts,tsx}",
       "App.tsx"
     ]
+  },
+  "expo": {
+    "autolinking": {
+      "android": {
+        "buildFromSource": [
+          ".*"
+        ]
+      }
+    }
   }
 }

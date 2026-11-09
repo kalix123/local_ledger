@@ -70,12 +70,16 @@ const jobs = [
   ['splash-icon.png', svg(mark(1.4)), 1024],
   ['favicon.png', svg(bg(true) + mark(1.5)), 48],
   ['logo.png', svg(bg(true) + mark(1.5)), 256],
+  // Store listing icon (F-Droid reads fastlane metadata), relative to the output folder.
+  ['../fastlane/metadata/android/en-US/images/icon.png', svg(bg(false) + mark(1.15)), 512],
 ];
 
 (async () => {
   fs.mkdirSync(out, { recursive: true });
   for (const [name, buf, size] of jobs) {
-    await sharp(buf, { density: 144 }).resize(size, size).png().toFile(path.join(out, name));
+    const file = path.join(out, name);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    await sharp(buf, { density: 144 }).resize(size, size).png().toFile(file);
     console.log('wrote', name, size);
   }
 })();
