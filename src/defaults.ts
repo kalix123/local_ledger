@@ -69,6 +69,7 @@ export const DEFAULT_SETTINGS: Settings = {
   iconPack: 'icons',
   appIcon: 'coin',
   supporterCode: '',
+  autoFocusEntry: true,
 };
 
 export function defaultData(): AppData {

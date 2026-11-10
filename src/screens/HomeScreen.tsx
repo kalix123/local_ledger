@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Platform, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import EditTransaction from '../components/EditTransaction';
 import QuickEntry from '../components/QuickEntry';
 import TransactionRow from '../components/TransactionRow';
@@ -38,7 +38,7 @@ export default function HomeScreen({ go }: { go: (t: Tab) => void }) {
 
   return (
     <View>
-      <QuickEntry autoFocus={Platform.OS === 'web'} />
+      <QuickEntry autoFocus={data.settings.autoFocusEntry} />
 
       <Card style={{ marginTop: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -128,6 +128,7 @@ function sanitizeSettings(raw: unknown): Settings {
     iconPack: typeof s.iconPack === 'string' && Object.prototype.hasOwnProperty.call(ICON_PACKS, s.iconPack) ? (s.iconPack as IconPackId) : d.iconPack,
     appIcon: typeof s.appIcon === 'string' && Object.prototype.hasOwnProperty.call(APP_ICONS, s.appIcon) ? (s.appIcon as AppIconId) : d.appIcon,
     supporterCode: str(s.supporterCode, 40),
+    autoFocusEntry: typeof s.autoFocusEntry === 'boolean' ? s.autoFocusEntry : d.autoFocusEntry,
   };
 }
 

@@ -87,9 +87,9 @@ To publish a release:
 
 1. Bump `version` **and** `android.versionCode` in `app.json`, and add `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`.
 2. Commit, then tag and push: `git tag v1.0.0 && git push origin v1.0.0`. The tag must match `version`, or the build fails.
-3. The workflow creates a GitHub release with both APKs attached.
+3. The workflow creates a GitHub release named "Local Ledger <version>" with both APKs, the changelog, a "which file do I download?" table and SHA-256 checksums.
 
-**Signing:** add these repository secrets under *Settings → Secrets and variables → Actions* to sign the APK with your release key: `ANDROID_KEYSTORE_BASE64` (the keystore file, base64-encoded), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Without them the APK is signed with the public debug key, which is fine for testing but not for publishing. Keep a backup of the keystore: Android only accepts updates signed with the same key.
+**Signing:** add these repository secrets under *Settings → Secrets and variables → Actions* to sign the APK with your release key: `ANDROID_KEYSTORE_BASE64` (the keystore file, base64-encoded), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`. Without them the APK is signed with the public debug key, which is fine for testing but not for publishing, so tag builds stop with an error instead of publishing a debug-signed release. Keep a backup of the keystore: Android only accepts updates signed with the same key.
 
 The Android package is `com.coratealeaf.localledger` (in [app.json](app.json)). It can't be changed after the app is published.
 

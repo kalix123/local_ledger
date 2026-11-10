@@ -204,6 +204,7 @@ export function ToggleRow({ label, hint, value, onChange, disabled }: { label: s
         value={value}
         onValueChange={onChange}
         disabled={disabled}
+        accessibilityLabel={label}
         trackColor={{ true: p.accent, false: p.border }}
         thumbColor="#fff"
         {...({ activeThumbColor: '#fff' } as object)}

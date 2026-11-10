@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import React from 'react';
+import { TextInput } from 'react-native';
 import App from '../App';
 import { HISTORY_PAGE } from '../src/screens/HistoryScreen';
 import { CHUNK_PREFIX, loadRaw, META_KEY, resetStorageCache, save } from '../src/storage';
@@ -181,6 +182,39 @@ describe('large data', () => {
 });
 
 describe('settings', () => {
+  // The Jest TextInput mock puts focus() on the prototype, so every input shares this spy.
+  const focusSpy = (TextInput as any).prototype.focus as jest.Mock;
+  const afterFocusDelay = () => act(async () => { await new Promise((r) => setTimeout(r, 250)); });
+
+  test('the entry box is focused on open by default', async () => {
+    focusSpy.mockClear();
+    await renderApp();
+    await afterFocusDelay();
+    expect(focusSpy).toHaveBeenCalled();
+  });
+
+  test('turning auto-focus off is saved and stops the focus', async () => {
+    await renderApp();
+    await fireEvent.press(screen.getByText('Settings'));
+    await fireEvent(screen.getByLabelText('Open the keyboard on Home'), 'valueChange', false);
+    expect((await stored()).settings.autoFocusEntry).toBe(false);
+
+    focusSpy.mockClear();
+    await fireEvent.press(screen.getByText('Home'));
+    await afterFocusDelay();
+    expect(focusSpy).not.toHaveBeenCalled();
+  });
+
+  test('the supporter code box sits near the top, above the keyboard', async () => {
+    await renderApp();
+    await fireEvent.press(screen.getByText('Settings'));
+    const json = JSON.stringify(screen.toJSON());
+    const box = json.indexOf('LL-XXXX-XXXX');
+    expect(box).toBeGreaterThan(-1);
+    expect(box).toBeLessThan(json.indexOf('Your data stays on this device'));
+    expect(box).toBeLessThan(json.indexOf('Appearance'));
+  });
+
   test('supporter code unlocks the Custom theme; a wrong one does not', async () => {
     await renderApp();
     await fireEvent.press(screen.getByText('Settings'));

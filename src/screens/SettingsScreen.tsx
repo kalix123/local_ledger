@@ -8,7 +8,7 @@ import { sanitize, useCategory, useStore } from '../store';
 import { isValidSupporterCode, normalizeCode } from '../supporter';
 import { APP_ICONS, contrast, DEFAULT_CUSTOM_THEME, HEX_RE, THEMES } from '../theme';
 import { AppIconId, CustomTheme, IconPackId, ThemeId, TxType } from '../types';
-import { Button, Card, CatLabel, Chip, Divider, Field, SectionTitle, Segmented, T, useP } from '../ui';
+import { Button, Card, CatLabel, Chip, Divider, Field, SectionTitle, Segmented, T, ToggleRow, useP } from '../ui';
 import { toCSV, today } from '../utils';
 
 export default function SettingsScreen() {
@@ -34,7 +34,10 @@ export default function SettingsScreen() {
         </T>
       </Card>
 
+      {/* Near the top so the Android keyboard can't cover the code box. */}
+      <SupporterSection />
       <PrivacyCard />
+      <EntrySection />
       <AppearanceSection />
       {advanced ? (
         <>
@@ -44,7 +47,6 @@ export default function SettingsScreen() {
           <DataSection />
         </>
       ) : null}
-      <SupporterSection />
     </View>
   );
 }
@@ -64,9 +66,28 @@ function PrivacyCard() {
   );
 }
 
+/* ----------------------------------------------------------------- entry */
+
+function EntrySection() {
+  const { data, updateSettings } = useStore();
+  return (
+    <>
+      <SectionTitle>Quick entry</SectionTitle>
+      <Card>
+        <ToggleRow
+          label="Open the keyboard on Home"
+          hint="Focuses the entry box whenever the Home screen opens, so you can start typing straight away."
+          value={data.settings.autoFocusEntry}
+          onChange={(autoFocusEntry) => updateSettings({ autoFocusEntry })}
+        />
+      </Card>
+    </>
+  );
+}
+
 /* ------------------------------------------------------------ appearance */
 
-const SUPPORTER_MSG = 'Unlock with a supporter code (see the bottom of Settings). Thank you!';
+const SUPPORTER_MSG = 'Unlock with a supporter code (see the top of Settings). Thank you!';
 const PACK_PREVIEW: IconName[] = ['groceries', 'dining', 'transport', 'paycheck', 'calendar'];
 
 function AppearanceSection() {

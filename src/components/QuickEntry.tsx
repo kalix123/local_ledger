@@ -28,6 +28,14 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
   const inputRef = useRef<TextInputInstance>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Focus after first layout rather than with the autoFocus prop, which Android often ignores
+  // when the screen has only just mounted (e.g. right after the loading screen).
+  useEffect(() => {
+    if (!autoFocus) return;
+    const t = setTimeout(() => inputRef.current?.focus(), 150);
+    return () => clearTimeout(t);
+  }, [autoFocus]);
+
   useEffect(() => {
     const t = setInterval(() => setExampleIdx((i) => (i + 1) % EXAMPLES.length), 4000);
     return () => {
@@ -123,7 +131,6 @@ export default function QuickEntry({ autoFocus }: { autoFocus?: boolean }) {
         <TextInput
           ref={inputRef}
           value={text}
-          autoFocus={autoFocus}
           onChangeText={(v) => {
             setText(v);
             if (!v) reset();

@@ -130,10 +130,19 @@ describe('sanitize: repairs damaged data', () => {
       iconPack: 'toString',
       appIcon: 'hacked',
       supporterCode: 12345,
+      autoFocusEntry: 'yes',
     };
     const s = sanitize(raw).settings;
-    expect(s).toMatchObject({ mode: 'basic', currency: '$', cycleStartDay: 1, theme: 'system', iconPack: 'icons', appIcon: 'coin', supporterCode: '12345' });
+    expect(s).toMatchObject({ mode: 'basic', currency: '$', cycleStartDay: 1, theme: 'system', iconPack: 'icons', appIcon: 'coin', supporterCode: '12345', autoFocusEntry: true });
     expect(s.customTheme).toEqual({ ...defaultData().settings.customTheme, accent: '#00FF00' });
+  });
+
+  test('auto-focus off survives a backup round trip; old backups default to on', () => {
+    const raw = base();
+    raw.settings.autoFocusEntry = false;
+    expect(sanitize(raw).settings.autoFocusEntry).toBe(false);
+    delete raw.settings.autoFocusEntry;
+    expect(sanitize(raw).settings.autoFocusEntry).toBe(true);
   });
 
   test.each([

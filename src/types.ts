@@ -51,6 +51,7 @@ export interface Settings {
   iconPack: IconPackId;
   appIcon: AppIconId;
   supporterCode: string; // validated offline; empty = not a supporter
+  autoFocusEntry: boolean; // focus the quick-entry box (open the keyboard) when Home opens
 }
 
 export interface AppData {
